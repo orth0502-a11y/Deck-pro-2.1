@@ -1,7 +1,26 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Deck PRO 2.0</title><link rel="manifest" href="./manifest.json"><style>body{font-family:system-ui;background:#f4f4f2;margin:0;color:#222}main{max-width:1100px;margin:auto;padding:16px}.card{background:#fff;padding:15px;margin:12px 0;border-radius:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}input,select,button{width:100%;box-sizing:border-box;padding:10px;margin-top:4px}.row{display:flex;direction:ltr;height:28px;margin:5px 0}.p{border:1px solid #888;text-align:center;font-size:11px;overflow:hidden}.bar{display:flex;direction:ltr;height:24px;background:#ddd}.good{font-weight:bold}.warn{font-weight:bold}</style></head><body><main><h1>Deck PRO 2.0 — אבטיפוס טכני</h1><div class="card"><div class="grid">
+<!doctype html>
+<html lang="he" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Deck PRO 2.1</title><link rel="manifest" href="./manifest.json">
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#222;background:#f3f3f1}
+body{margin:0}main{max-width:1180px;margin:auto;padding:16px}.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #0000000b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}label{font-size:13px}input,select,button{width:100%;box-sizing:border-box;padding:11px;border:1px solid #bbb;border-radius:9px;margin-top:4px}
+button{font-weight:750;font-size:16px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.stat{padding:10px;background:#f5f5f5;border-radius:10px}
+.rowbar,.stockbar{display:flex;direction:ltr;height:32px;margin:6px 0}.piece{border:1px solid #777;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;font-size:11px}
+.joists{direction:ltr;font-family:ui-monospace,monospace;word-break:break-word}.good{font-weight:750}.warn{font-weight:750}.muted{opacity:.7}table{width:100%;border-collapse:collapse;font-size:13px}td,th{border-bottom:1px solid #ddd;padding:7px;text-align:right}
+</style></head><body><main>
+<h1>Deck PRO 2.1 — מנוע טכני</h1>
+<div class="card"><div class="grid">
 <label>מצב<select id="mode"><option value="new">דק חדש — תכנן תשתית</option><option value="existing">תשתית קיימת</option></select></label>
-<label>אורך דק מ׳<input id="L" type="number" step=".01" value="11.50"></label><label>רוחב דק מ׳<input id="W" type="number" step=".01" value="1.12"></label>
-<label>אורך לוח מ׳<input id="BL" type="number" step=".001" value="4.88"></label><label>רוחב לוח מ׳<input id="BW" type="number" step=".001" value=".14"></label>
-<label>רווח מ׳<input id="G" type="number" step=".001" value=".005"></label><label>Kerf מ׳<input id="K" type="number" step=".001" value=".003"></label>
-<label>מרווח קורות מ׳<input id="J" type="number" step=".01" value=".40"></label><label>חתיכה מינ׳ מ׳<input id="MIN" type="number" step=".01" value=".60"></label>
-<label>יעד ניצול %<input id="T" type="number" value="92"></label></div><button id="calc">חשב עבודה</button></div><div id="out"></div></main><script src="./app.js"></script></body></html>
+<label>אורך דק (מ׳)<input id="L" type="number" step=".01" value="15.15"></label>
+<label>רוחב דק (מ׳)<input id="W" type="number" step=".01" value="4.16"></label>
+<label>אורך לוח גלם (מ׳)<input id="BL" type="number" step=".001" value="4.88"></label>
+<label>רוחב לוח (מ׳)<input id="BW" type="number" step=".001" value=".14"></label>
+<label>רווח (מ׳)<input id="G" type="number" step=".001" value=".005"></label>
+<label>Kerf למסור (מ׳)<input id="K" type="number" step=".001" value=".003"></label>
+<label>מרווח קורות מקס׳ (מ׳)<input id="J" type="number" step=".01" value=".40"></label>
+<label>חתיכה מינימלית (מ׳)<input id="MIN" type="number" step=".01" value=".60"></label>
+<label>מקס׳ קורות חיבור מיוחדות<input id="MAXEX" type="number" step="1" value="6"></label>
+</div><button id="calc">חשב עבודה — מקסם ניצול</button></div><div id="out"></div>
+<script src="./app.js"></script></body></html>
