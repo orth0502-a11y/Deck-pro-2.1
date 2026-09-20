@@ -1,29 +1,8 @@
-<!doctype html><html lang="he" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deck PRO 2.4</title><link rel="manifest" href="./manifest.json">
-<style>
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f5f5f5;color:#111}
-main{max-width:1180px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:15px;margin:11px 0}
-.grid,.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}.stat{border:1px solid #ddd;padding:9px;border-radius:9px}
-input,select,button{width:100%;padding:9px;margin-top:4px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#111}
-button{font-weight:800;cursor:pointer}.solution{border:2px solid #111}.solution h2{margin-top:0}.deck{direction:ltr;border:2px solid #111;padding:2px}
-.r{height:18px;display:flex;border-bottom:1px solid #ddd}.r:last-child{border-bottom:0}.pc{box-sizing:border-box;border-right:2px solid #111;font-size:8px;overflow:hidden;text-align:center}.pc:last-child{border-right:0}
-.stock{display:flex;direction:ltr;height:27px;margin:4px 0}.sp{border:1px solid #555;display:flex;align-items:center;justify-content:center;font-size:9px;overflow:hidden}
-.ok{font-weight:800}.muted,small{opacity:.7}.tag{display:inline-block;border:1px solid #111;border-radius:999px;padding:3px 8px;margin:2px;font-size:12px}
-details{border-top:1px solid #ddd;margin-top:10px;padding-top:8px}summary{font-weight:800;cursor:pointer}
-</style></head><body><main>
-<h1>Deck PRO 2.4 — Multi Solution Engine</h1>
-<div class="card"><div class="grid">
-<label>אורך דק (מ׳)<input id="L" type="number" step=".01" value="7.60"></label>
-<label>רוחב דק (מ׳)<input id="W" type="number" step=".01" value="4.32"></label>
-<label>אורך לוח גלם (מ׳)<input id="BL" type="number" step=".001" value="4.88"></label>
-<label>רוחב לוח (ס״מ)<input id="BWcm" type="number" step=".1" value="14"></label>
-<label>רווח (מ״מ)<input id="Gmm" type="number" step=".5" value="5"></label>
-<label>Kerf (מ״מ)<input id="Kmm" type="number" step=".1" value="3"></label>
-<label>חתיכה מינ׳ (ס״מ)<input id="MINcm" type="number" step="1" value="60"></label>
-<label>מרחק קו ראשון/אחרון מינ׳ (ס״מ)<input id="EDGEcm" type="number" step="1" value="40"></label>
-<label>מרחק מינ׳ בין קווי חיבור (ס״מ)<input id="LINEcm" type="number" step="1" value="40"></label>
-<label>מספר פתרונות להצגה<select id="N"><option>4</option><option selected>6</option><option>8</option></select></label>
-</div><button id="calc">מצא פתרונות חיפוי</button>
-<p class="muted">בשלב זה המנוע אופטימלי לחיפוי בלבד. התשתית תחושב לאחר בחירת פתרון.</p></div>
-<div id="out"></div></main><script src="./app.js"></script></body></html>
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Deck PRO 2.5</title><link rel="manifest" href="./manifest.json"><style>
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f5f5f5;color:#111}main{max-width:1200px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:15px;margin:11px 0}.grid,.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}.stat{border:1px solid #ddd;padding:9px;border-radius:9px}input,select,button{width:100%;padding:9px;margin-top:4px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#111}button{font-weight:800}.solution{border:2px solid #111}.tags{margin:7px 0}.tag{display:inline-block;border:1px solid #111;border-radius:999px;padding:3px 8px;margin:2px;font-size:12px}.deck{direction:ltr;border:2px solid #111;padding:2px}.r{height:17px;display:flex;border-bottom:1px solid #ddd}.pc{border-right:2px solid #111;font-size:8px;overflow:hidden;text-align:center}.pc:last-child{border-right:0}.stock{display:flex;direction:ltr;height:27px;margin:4px 0}.sp{border:1px solid #555;display:flex;align-items:center;justify-content:center;font-size:9px;overflow:hidden}.muted,small{opacity:.7}details{border-top:1px solid #ddd;margin-top:10px;padding-top:8px}summary{font-weight:800;cursor:pointer}</style></head><body><main>
+<h1>Deck PRO 2.5 — Multi-Agent + Pareto</h1><div class="card"><div class="grid">
+<label>אורך דק (מ׳)<input id="L" type="number" step=".01" value="7.60"></label><label>רוחב דק (מ׳)<input id="W" type="number" step=".01" value="4.32"></label><label>אורך לוח גלם (מ׳)<input id="BL" type="number" step=".001" value="4.88"></label>
+<label>רוחב לוח (ס״מ)<input id="BW" type="number" value="14"></label><label>רווח (מ״מ)<input id="G" type="number" value="5"></label><label>Kerf (מ״מ)<input id="K" type="number" value="3"></label>
+<label>חתיכה מינ׳ (ס״מ)<input id="MIN" type="number" value="60"></label><label>קו ראשון/אחרון מינ׳ מהקצה (ס״מ)<input id="EDGE" type="number" value="40"></label>
+<label>קווי חיבור מקס׳ לבדיקה<select id="MAX"><option>4</option><option selected>6</option><option>8</option></select></label><label>פתרונות בתצוגה<select id="SHOW"><option>6</option><option selected>10</option><option>15</option></select></label>
+</div><button id="go">הפעל את כל סוכני החיפוש</button><label><input id="all" type="checkbox" style="width:auto"> מצב בדיקה — הצג מאגר רחב יותר</label><p class="muted">40 ס״מ הוא תנאי קצה בלבד. מספר קווי החיבור ומיקומם הם משתנים שהמנוע מחפש.</p></div><div id="out"></div></main><script src="./app.js"></script></body></html>

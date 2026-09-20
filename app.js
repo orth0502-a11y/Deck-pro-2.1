@@ -1,86 +1,57 @@
-const $=x=>document.getElementById(x),F=x=>(+x).toFixed(3),E=1e-8;
-function V(){return{L:+$("L").value,W:+$("W").value,BL:+$("BL").value,BW:+$("BWcm").value/100,G:+$("Gmm").value/1000,K:+$("Kmm").value/1000,MIN:+$("MINcm").value/100,EDGE:+$("EDGEcm").value/100,LINE:+$("LINEcm").value/100,N:+$("N").value}}
-function R(v){return Math.ceil((v.W+v.G)/(v.BW+v.G))}
-function pack(ps,v){let bins=[];[...ps].sort((a,b)=>b.len-a.len).forEach(p=>{let bi=-1,br=1e99;bins.forEach((b,i)=>{let used=b.reduce((s,x)=>s+x.len,0)+Math.max(0,b.length-1)*v.K, rem=v.BL-used-(b.length?v.K:0)-p.len;if(rem>=-E&&rem<br){br=rem;bi=i}});bi<0?bins.push([p]):bins[bi].push(p)});return bins}
+const $=x=>document.getElementById(x),F=x=>(+x).toFixed(3),E=1e-9;
+function V(){return{L:+$("L").value,W:+$("W").value,BL:+$("BL").value,BW:+$("BW").value/100,G:+$("G").value/1000,K:+$("K").value/1000,MIN:+$("MIN").value/100,EDGE:+$("EDGE").value/100,MAX:+$("MAX").value,SHOW:+$("SHOW").value,ALL:$("all").checked}}
+function nr(v){return Math.ceil((v.W+v.G)/(v.BW+v.G))}
+function pack(ps,v){let bs=[];[...ps].sort((a,b)=>b.len-a.len).forEach(p=>{let bi=-1,br=1e99;bs.forEach((b,i)=>{let u=b.reduce((s,x)=>s+x.len,0)+Math.max(0,b.length-1)*v.K,rem=v.BL-u-(b.length?v.K:0)-p.len;if(rem>=-E&&rem<br){br=rem;bi=i}});bi<0?bs.push([p]):bs[bi].push(p)});return bs}
 function variance(a){let m=a.reduce((s,x)=>s+x,0)/a.length;return a.reduce((s,x)=>s+(x-m)**2,0)/a.length}
-function genLineSets(v){
- let sets=[],step=.05;
- // Generate 2–5 master joint lines. Edge distances are hard constraints; near-equal spacing is scored, not forced.
- for(let n=2;n<=5;n++){
-   let ideal=(v.L-2*v.EDGE)/(n-1);
-   for(let shift=-.35;shift<=.3501;shift+=.05){
-     let first=v.EDGE+shift;if(first<v.EDGE-E)continue;
-     let last=v.L-first;if(last>v.L-v.EDGE+E)continue;
-     let lines=[];
-     for(let i=0;i<n;i++)lines.push(first+i*(last-first)/(n-1));
-     lines=lines.map(x=>Math.round(x/step)*step);
-     if(lines[0]<v.EDGE-E||v.L-lines.at(-1)<v.EDGE-E)continue;
-     if(lines.slice(1).some((x,i)=>x-lines[i]<v.LINE-E))continue;
-     sets.push(lines)
+function key(q){return q.lines.map(F).join("|")}
+function make(lines,v){
+ let A=lines.filter((_,i)=>i%2===0),B=lines.filter((_,i)=>i%2===1);if(!A.length||!B.length)return null;
+ function lens(c){let p=[0,...c,v.L];return p.slice(1).map((x,i)=>+(x-p[i]).toFixed(3))}
+ let LA=lens(A),LB=lens(B);if([...LA,...LB].some(x=>x<v.MIN-E||x>v.BL+E))return null;
+ let R=nr(v),rows=[],ps=[];for(let r=0;r<R;r++){let c=r%2?B:A,Ls=r%2?LB:LA,type=r%2?"B":"A",rp=Ls.map((len,i)=>{let p={row:r+1,label:`${r+1}${String.fromCharCode(65+i)}`,len};ps.push(p);return p});rows.push({type,c,ps:rp})}
+ let bins=pack(ps,v),d=R*v.L,g=[lines[0],...lines.slice(1).map((x,i)=>x-lines[i]),v.L-lines.at(-1)];
+ return{lines,A,B,LA,LB,R,rows,ps,bins,util:100*d/(bins.length*v.BL),visual:variance(g),edge:Math.abs(g[0]-g.at(-1)),gaps:g}
+}
+function pool(v){
+ let out=[],seen=new Set(),step=.10;
+ // Exhaustive-ish structured families from 2 up to MAX master lines.
+ for(let n=2;n<=v.MAX;n++){
+   let span=v.L-2*v.EDGE,base=span/(n-1);
+   for(let e1=0;e1<=.8+E;e1+=step){
+    let first=v.EDGE+e1,last=v.L-v.EDGE-e1;if(last<=first)continue;
+    let lines=Array.from({length:n},(_,i)=>first+i*(last-first)/(n-1));
+    for(let j=-4;j<=4;j++){
+      let q=lines.map((x,i)=>x+(i>0&&i<n-1?j*.05*((i%2)?1:-1):0)).map(x=>Math.round(x*100)/100);
+      if(q[0]<v.EDGE-E||v.L-q.at(-1)<v.EDGE-E||q.slice(1).some((x,i)=>x-q[i]<v.MIN*.5))continue;
+      let z=make(q,v);if(z&&!seen.has(key(z))){seen.add(key(z));out.push(z)}
+    }
    }
  }
- // asymmetrical perturbations around balanced layouts to let material efficiency compete with appearance
- let base=[...sets];
- base.forEach(lines=>{
-   for(let j=1;j<lines.length-1;j++)for(let d of [-.20,-.10,.10,.20]){
-     let q=[...lines];q[j]=Math.round((q[j]+d)*20)/20;
-     if(q[0]>=v.EDGE-E&&v.L-q.at(-1)>=v.EDGE-E&&q.slice(1).every((x,i)=>x-q[i]>=v.LINE-E))sets.push(q)
-   }
- });
- let seen=new Set();return sets.filter(x=>{let k=x.map(F).join("|");if(seen.has(k))return false;seen.add(k);return true}).slice(0,500)
+ // Two-line specialist: broad independent search; this is deliberately not tied to equal spacing.
+ for(let a=v.EDGE;a<=v.L-v.EDGE-v.MIN;a+=.05)for(let b=a+v.MIN;b<=v.L-v.EDGE+E;b+=.05){let z=make([+a.toFixed(2),+b.toFixed(2)],v);if(z&&!seen.has(key(z))){seen.add(key(z));out.push(z)}}
+ return out
 }
-function patterns(lines,v){
- // alternating use of master lines: A uses 0,2,4...; B uses 1,3...
- let out=[];
- for(let parity=0;parity<2;parity++){
-   let c=lines.filter((_,i)=>i%2===parity);
-   if(!c.length)continue;
-   let pts=[0,...c,v.L],ls=pts.slice(1).map((x,i)=>x-pts[i]);
-   if(ls.every(x=>x>=v.MIN-E&&x<=v.BL+E))out.push({type:parity?"B":"A",c,ls})
- }
- return out.length===2?out:null
-}
-function build(lines,v){
- let pats=patterns(lines,v);if(!pats)return null;let rows=[],ps=[],rn=R(v);
- for(let r=0;r<rn;r++){let P=pats[r%2],rp=P.ls.map((len,i)=>{let p={row:r+1,label:`${r+1}${String.fromCharCode(65+i)}`,len:+len.toFixed(3)};ps.push(p);return p});rows.push({row:r+1,type:P.type,c:P.c,ps:rp})}
- let bins=pack(ps,v),d=rn*v.L,util=100*d/(bins.length*v.BL);
- let gaps=[lines[0],...lines.slice(1).map((x,i)=>x-lines[i]),v.L-lines.at(-1)];
- let visual=variance(gaps),edge=Math.abs(lines[0]-(v.L-lines.at(-1)));
- return{lines,pats,rows,ps,bins,rn,util,visual,edge,gaps}
-}
-function verify(q,v){let e=[];q.rows.forEach(r=>{if(Math.abs(r.ps.reduce((s,x)=>s+x.len,0)-v.L)>.002)e.push("row");if(r.ps.some(x=>x.len<v.MIN-E||x.len>v.BL+E))e.push("piece")});q.bins.forEach(b=>{let u=b.reduce((s,x)=>s+x.len,0)+Math.max(0,b.length-1)*v.K;if(u>v.BL+.002)e.push("stock")});if(q.bins.flat().length!==q.ps.length)e.push("assign");return !e.length}
-function solve(v){
- let all=[];for(let lines of genLineSets(v)){let q=build(lines,v);if(q&&verify(q,v))all.push(q)}
- // Pareto-ish multi-agent selection: material, visual balance, fewer lines, symmetric edge, compromise
- let agents=[
-  q=>[q.bins.length,-q.util,q.visual,q.lines.length],
-  q=>[q.visual,q.bins.length,-q.util,q.lines.length],
-  q=>[q.lines.length,q.bins.length,q.visual,-q.util],
-  q=>[q.edge,q.visual,q.bins.length,-q.util],
-  q=>[q.bins.length,q.visual,q.lines.length,q.edge]
+function dominates(a,b){return a.bins.length<=b.bins.length&&a.lines.length<=b.lines.length&&a.visual<=b.visual+E&&a.edge<=b.edge+E&&(a.bins.length<b.bins.length||a.lines.length<b.lines.length||a.visual<b.visual-E||a.edge<b.edge-E)}
+function pareto(P){return P.filter((q,i)=>!P.some((x,j)=>j!==i&&dominates(x,q)))}
+function pick(P,v){
+ const agents=[
+  ["מינימום קווי חיבור",q=>[q.lines.length,q.bins.length,q.visual]],
+  ["ניצול חומר",q=>[q.bins.length,-q.util,q.lines.length,q.visual]],
+  ["איזון ויזואלי",q=>[q.visual,q.edge,q.bins.length,q.lines.length]],
+  ["סימטריית קצוות",q=>[q.edge,q.visual,q.bins.length,q.lines.length]],
+  ["פתרון מאוזן",q=>[q.bins.length,q.lines.length,q.visual,q.edge]]
  ];
- function cmp(score){return(a,b)=>{let A=score(a),B=score(b);for(let i=0;i<A.length;i++)if(Math.abs(A[i]-B[i])>1e-9)return A[i]-B[i];return 0}}
- let chosen=[],seen=new Set();
- for(let score of agents){for(let q of [...all].sort(cmp(score)).slice(0,12)){let k=q.lines.map(F).join("|");if(!seen.has(k)){seen.add(k);chosen.push(q)}}}
- // remove clearly dominated material options unless visually materially different
- chosen.sort((a,b)=>a.bins.length-b.bins.length||a.visual-b.visual);
- let diverse=[];for(let q of chosen){if(diverse.some(x=>x.bins.length===q.bins.length&&Math.abs(x.visual-q.visual)<.002&&x.lines.length===q.lines.length))continue;diverse.push(q)}
- return diverse.slice(0,v.N)
+ function cmp(fn){return(a,b)=>{let A=fn(a),B=fn(b);for(let i=0;i<A.length;i++)if(Math.abs(A[i]-B[i])>E)return A[i]-B[i];return 0}}
+ let got=[],seen=new Set();
+ agents.forEach(([name,fn])=>{[...P].sort(cmp(fn)).slice(0,v.ALL?12:4).forEach(q=>{let k=key(q);if(!seen.has(k)){seen.add(k);got.push({...q,reason:name})}})});
+ // Explorer: maximize geometric difference from selected solutions.
+ let rest=P.filter(q=>!seen.has(key(q)));while(rest.length&&got.length<(v.ALL?Math.min(40,P.length):Math.max(v.SHOW,10))){rest.sort((a,b)=>{let da=Math.min(...got.map(x=>Math.abs(x.lines.length-a.lines.length)+Math.abs(x.visual-a.visual)+Math.abs(x.bins.length-a.bins.length)));let db=Math.min(...got.map(x=>Math.abs(x.lines.length-b.lines.length)+Math.abs(x.visual-b.visual)+Math.abs(x.bins.length-b.bins.length)));return db-da});let q=rest.shift();seen.add(key(q));got.push({...q,reason:"Explorer — חלופה שונה"})}
+ return got.slice(0,v.ALL?40:v.SHOW)
 }
-function render(){
- let v=V(),sol=solve(v),o=$("out");if(!sol.length){o.innerHTML='<div class="card"><b>לא נמצאו פתרונות חוקיים במגבלות האלו.</b></div>';return}
- let demand=R(v)*v.L,lb=Math.ceil(demand/v.BL),h=`<div class="card"><h2>נמצאו ${sol.length} פתרונות רלוונטיים</h2><p>מספר שורות: <b>${R(v)}</b> · חסם אורך תיאורטי: <b>${lb}</b> לוחות. אין כרגע דירוג "מנצח" — כל חלופה מוצגת עם היתרונות שלה.</p></div>`;
- sol.forEach((q,ix)=>{
-  let kerf=q.bins.reduce((s,b)=>s+Math.max(0,b.length-1)*v.K,0),scrap=q.bins.length*v.BL-demand-kerf;
-  h+=`<div class="card solution"><h2>פתרון ${ix+1}</h2><span class="tag">${q.bins.length} לוחות</span><span class="tag">${q.util.toFixed(2)}% ניצול</span><span class="tag">${q.lines.length} קווי חיבור</span><span class="tag">שארית ${F(Math.max(0,scrap))} מ׳</span>
-  <p><b>קווי חיבור:</b> ${q.lines.map(F).join(" / ")} מ׳</p><p><b>מרווחים:</b> ${q.gaps.map(F).join(" / ")} מ׳</p>
-  <p><b>A:</b> ${q.pats[0].ls.map(F).join(" + ")} · <b>B:</b> ${q.pats[1].ls.map(F).join(" + ")}</p>
-  <div class="deck">`;
-  q.rows.forEach(r=>h+=`<div class="r">${r.ps.map(x=>`<div class="pc" style="width:${100*x.len/v.L}%">${r.type}${x.label}</div>`).join("")}</div>`);
-  h+=`</div><details><summary>תוכנית חיתוך מלאה</summary>`;
-  q.bins.forEach((b,i)=>{let k=Math.max(0,b.length-1)*v.K,rem=v.BL-b.reduce((s,x)=>s+x.len,0)-k;h+=`<b>לוח #${i+1}</b><div class="stock">${b.map(x=>`<div class="sp" style="width:${100*x.len/v.BL}%">${x.label} ${F(x.len)}</div>`).join("")}</div><small>${b.map(x=>`${F(x.len)}→${x.label}`).join(" | ")} · kerf ${F(k)} · שארית ${F(Math.max(0,rem))}</small><br>`});
-  h+=`</details></div>`;
- });
- o.innerHTML=h
-}
-$("calc").onclick=render;render();
+function solve(v){let P=pool(v),front=pareto(P),chosen=pick(front.length?front:P,v);return{P,front,chosen}}
+function render(){let v=V(),S=solve(v),o=$("out"),d=nr(v)*v.L,lb=Math.ceil(d/v.BL);let h=`<div class="card"><h2>מנוע החיפוש</h2><p>נבדקו <b>${S.P.length}</b> תצורות חוקיות · חזית Pareto: <b>${S.front.length}</b> · מוצגות: <b>${S.chosen.length}</b>.</p><p>שורות: <b>${nr(v)}</b> · חסם אורך תיאורטי: <b>${lb}</b> לוחות.</p></div>`;
+ S.chosen.forEach((q,i)=>{let kerf=q.bins.reduce((s,b)=>s+Math.max(0,b.length-1)*v.K,0),scr=q.bins.length*v.BL-d-kerf;
+ h+=`<div class="card solution"><h2>פתרון ${i+1}</h2><p><b>למה הוא כאן:</b> ${q.reason}</p><div class="tags"><span class="tag">${q.lines.length} קווי חיבור</span><span class="tag">${q.bins.length} לוחות</span><span class="tag">${q.util.toFixed(2)}% ניצול</span><span class="tag">שארית ${F(Math.max(0,scr))} מ׳</span></div><p><b>קווים:</b> ${q.lines.map(F).join(" / ")} מ׳</p><p><b>מרווחים:</b> ${q.gaps.map(F).join(" / ")} מ׳</p><p><b>A:</b> ${q.LA.map(F).join(" + ")}<br><b>B:</b> ${q.LB.map(F).join(" + ")}</p><div class="deck">`;
+ q.rows.forEach(r=>h+=`<div class="r">${r.ps.map(x=>`<div class="pc" style="width:${100*x.len/v.L}%">${r.type}${x.label}</div>`).join("")}</div>`);
+ h+=`</div><details><summary>תוכנית חיתוך מלאה</summary>`;q.bins.forEach((b,j)=>{let k=Math.max(0,b.length-1)*v.K,rem=v.BL-b.reduce((s,x)=>s+x.len,0)-k;h+=`<b>לוח #${j+1}</b><div class="stock">${b.map(x=>`<div class="sp" style="width:${100*x.len/v.BL}%">${x.label} ${F(x.len)}</div>`).join("")}</div><small>${b.map(x=>`${F(x.len)}→${x.label}`).join(" | ")} · kerf ${F(k)} · שארית ${F(Math.max(0,rem))}</small><br>`});h+=`</details></div>`});o.innerHTML=h}
+$("go").onclick=render;$("all").onchange=render;render();
