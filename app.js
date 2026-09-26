@@ -1,7 +1,7 @@
 const $=x=>document.getElementById(x),F=x=>(+x).toFixed(3),E=1e-9;let SOL=[],DEBUG={};
-function V(){return{b:+$("bottom").value,l:+$("leftH").value,t:+$("top").value,d:+$("diag").value,r:+$("rightH").value,BL:+$("BL").value,BW:+$("BW").value/100,G:+$("G").value/1000,K:+$("K").value/1000,MIN:+$("MIN").value/100,EDGE:+$("EDGE").value/100,MAX:+$("MAX").value}}
-function geometry(v){let calc=Math.hypot(v.b-v.t,v.l-v.r);return{calc,ok:Math.abs(calc-v.d)<=.03}}
-function rows(v){let pitch=v.BW+v.G,n=Math.ceil((v.l+v.G)/pitch),a=[];for(let i=0;i<n;i++){let y=Math.min(i*pitch,v.l),len;if(y<=v.r+E)len=v.b;else{let u=(y-v.r)/(v.l-v.r);len=v.b-u*(v.b-v.t)}a.push({row:i+1,y,len:+Math.max(v.t,len).toFixed(3)})}return a}
+function V(){let shape=$("shape").value;return{shape,b:+$("bottom").value,l:+$("leftH").value,t:shape==="rect"?+$("bottom").value:+$("top").value,d:shape==="rect"?0:+$("diag").value,r:shape==="rect"?+$("leftH").value:+$("rightH").value,BL:+$("BL").value,BW:+$("BW").value/100,G:+$("G").value/1000,K:+$("K").value/1000,MIN:+$("MIN").value/100,EDGE:+$("EDGE").value/100,MAX:+$("MAX").value}}
+function geometry(v){if(v.shape==="rect")return{calc:0,ok:true};let calc=Math.hypot(v.b-v.t,v.l-v.r);return{calc,ok:Math.abs(calc-v.d)<=.03}}
+function rows(v){let pitch=v.BW+v.G,n=Math.ceil((v.l+v.G)/pitch),a=[];for(let i=0;i<n;i++){let y=Math.min(i*pitch,v.l),len;if(v.shape==="rect")len=v.b;else if(y<=v.r+E)len=v.b;else{let u=(y-v.r)/(v.l-v.r);len=v.b-u*(v.b-v.t)}a.push({row:i+1,y,len:+Math.max(v.t,len).toFixed(3)})}return a}
 function rowCuts(r,lines,type,v){
  // A uses even-index master lines; B uses odd-index master lines.
  // A master line is simply ignored once the diagonal has shortened that row before it.
@@ -50,7 +50,7 @@ function choose(P,v){
  for(let [n,a] of [...fam.entries()].sort((a,b)=>a[0]-b[0])){raw.push([...a].sort((x,y)=>x.bins.length-y.bins.length||y.util-x.util)[0]);raw.push([...a].sort((x,y)=>balance(x,v)-balance(y,v)||x.bins.length-y.bins.length)[0])}
  let seen=new Set();return raw.filter(Boolean).filter(q=>{let k=q.lines.map(F).join("|")+"#"+q.bins.length;if(seen.has(k))return false;seen.add(k);return true}).slice(0,18)
 }
-function shapeSVG(v){let W=640,H=280,p=20,sx=(W-2*p)/v.b,sy=(H-2*p)/v.l,P=[[0,0],[v.b,0],[v.b,v.r],[v.t,v.l],[0,v.l]].map(([x,y])=>`${p+x*sx},${H-p-y*sy}`).join(" ");return `<svg class="shape" viewBox="0 0 ${W} ${H}"><polygon points="${P}" fill="none" stroke="black" stroke-width="3"/></svg>`}
+function shapeSVG(v){let W=640,H=280,p=20,sx=(W-2*p)/v.b,sy=(H-2*p)/v.l,P;if(v.shape==="rect")P=[[0,0],[v.b,0],[v.b,v.l],[0,v.l]];else P=[[0,0],[v.b,0],[v.b,v.r],[v.t,v.l],[0,v.l]];P=P.map(([x,y])=>`${p+x*sx},${H-p-y*sy}`).join(" ");return `<svg class="shape" viewBox="0 0 ${W} ${H}"><polygon points="${P}" fill="none" stroke="black" stroke-width="3"/></svg>`}
 function full(q,v){
  let h='<h3>שרטוט החיפוי</h3><div class="deck">';q.rr.slice().reverse().forEach(r=>{h+=`<div class="row" style="width:${100*r.len/v.b}%">${r.ps.map(p=>`<div class="piece" style="width:${100*p.len/r.len}%">${r.type}${p.label}</div>`).join("")}</div>`});h+='</div>';
  h+='<h3>אורכי שורות וחיתוכים</h3><p>'+q.rr.map(r=>`שורה ${r.row} (${r.type}): ${r.ps.map(p=>F(p.len)).join(" + ")}`).join(" · ")+'</p><h3>תוכנית חיתוך</h3>';
@@ -58,10 +58,11 @@ function full(q,v){
 }
 function render(){
  let v=V(),g=geometry(v),rs=rows(v),P=candidates(rs,v);SOL=choose(P,v);
- $("shapeOut").innerHTML=`<div class="card"><h2>בדיקת הצורה</h2>${shapeSVG(v)}<p>אלכסון שהוזן: <b>${F(v.d)}</b> מ׳ · לפי יתר המידות: <b>${F(g.calc)}</b> מ׳ · ${g.ok?"✓ תקין":"⚠ בדוק מידות"}</p><p><b>${rs.length}</b> שורות · חתיכה מינימלית: <b>${Math.round(v.MIN*100)} ס״מ</b> · שתי וערב מופעל.</p></div>`;
- let h='<div class="card"><h2>חלופות חיפוי</h2><p class="muted">קו חיבור נשאר ישר וקבוע; כשהאלכסון מקצר שורה לפני הקו, אותה שורה פשוט אינה משתמשת בו.</p></div>';
+ let check=v.shape==="rect"?`מלבן ${F(v.b)} × ${F(v.l)} מ׳`:`אלכסון שהוזן: <b>${F(v.d)}</b> מ׳ · לפי יתר המידות: <b>${F(g.calc)}</b> מ׳ · ${g.ok?"✓ תקין":"⚠ בדוק מידות"}`;
+ $("shapeOut").innerHTML=`<div class="card"><h2>בדיקת הצורה</h2>${shapeSVG(v)}<p>${check}</p><p><b>${rs.length}</b> שורות · חתיכה מינימלית: <b>${Math.round(v.MIN*100)} ס״מ</b> · שתי וערב מופעל.</p></div>`;
+ let h='<div class="card"><h2>חלופות חיפוי</h2><p class="muted">קווי החיבור ישרים וקבועים ושתי וערב A/B נשמר בכל צורה.</p></div>';
  SOL.forEach((q,i)=>h+=`<div class="card solution" onclick="tog(${i})"><h2>חלופה ${i+1} — ${q.lines.length?q.lines.length+" קווי חיבור":"ללא חיבורים"}</h2><span class="tag">${q.bins.length} לוחות</span><span class="tag">${q.util.toFixed(2)}% ניצול</span><span class="tag">${q.lines.length} קווים</span><span class="tag">${q.actual} חיבורים בפועל</span><span class="tag">שארית ${F(Math.max(0,q.rem))} מ׳</span><p><b>מיקומי הקווים:</b> ${q.lines.length?q.lines.map(F).join(" / "):"אין"}<br><b>שארית שימושית:</b> ${F(q.use)} מ׳ · <b>שארית קצרה:</b> ${F(q.waste)} מ׳</p><div id="d${i}" class="hidden" onclick="event.stopPropagation()">${full(q,v)}</div></div>`);
- if(!SOL.length)h+='<div class="card"><b>לא נמצאה חלופה חוקית בהגדרות הנוכחיות.</b></div>';
- $("out").innerHTML=h
+ if(!SOL.length)h+='<div class="card"><b>לא נמצאה חלופה חוקית בהגדרות הנוכחיות.</b></div>';$("out").innerHTML=h
 }
-window.tog=i=>$("d"+i).classList.toggle("hidden");$("go").onclick=render;render();
+function shapeUI(){let custom=$("shape").value==="custom";document.querySelectorAll(".custom").forEach(x=>x.style.display=custom?"block":"none");$("bottomLabel").childNodes[0].nodeValue=custom?"בסיס תחתון (מ׳)":"אורך החיפוי — כיוון הלוחות (מ׳)";$("leftLabel").childNodes[0].nodeValue=custom?"צלע שמאלית (מ׳)":"רוחב השטח לרוחב הלוחות (מ׳)"}
+window.tog=i=>$("d"+i).classList.toggle("hidden");$("go").onclick=render;$("shape").onchange=()=>{shapeUI();render()};shapeUI();render();

@@ -1,21 +1,15 @@
 <!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deck PRO 3.3</title><link rel="manifest" href="./manifest.json"><style>
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f4f4f4;color:#111}main{max-width:1150px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #ccc;border-radius:14px;padding:15px;margin:10px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}input,select,button{width:100%;padding:9px;border:1px solid #999;border-radius:8px;background:#fff;margin-top:4px}button{font-weight:800}.solution{border:2px solid #111;cursor:pointer}.tag{display:inline-block;border:1px solid #111;border-radius:999px;padding:3px 8px;margin:2px;font-size:12px}.hidden{display:none}.muted,small{opacity:.7}.deck{direction:ltr;border:2px solid #111;padding:4px;position:relative}.row{height:15px;display:flex}.piece{border-right:2px solid #111;border-bottom:1px solid #ddd;font-size:8px;text-align:center;overflow:hidden}.stock{direction:ltr;display:flex;height:28px;margin:4px 0}.sp{border:1px solid #555;font-size:9px;display:flex;align-items:center;justify-content:center;overflow:hidden}.shape{width:100%;max-width:650px;border:1px solid #bbb}.diag{font-weight:700}</style></head><body><main>
-<h1>Deck PRO 3.3 — קווי חיבור חכמים</h1>
+<title>Deck PRO 3.4</title><link rel="manifest" href="./manifest.json"><style>
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f4f4f4;color:#111}main{max-width:1150px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #ccc;border-radius:14px;padding:15px;margin:10px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}input,select,button{width:100%;padding:9px;border:1px solid #999;border-radius:8px;background:#fff;margin-top:4px}button{font-weight:800}.solution{border:2px solid #111;cursor:pointer}.tag{display:inline-block;border:1px solid #111;border-radius:999px;padding:3px 8px;margin:2px;font-size:12px}.hidden{display:none}.muted,small{opacity:.7}.deck{direction:ltr;border:2px solid #111;padding:4px;position:relative}.row{height:15px;display:flex}.piece{border-right:2px solid #111;border-bottom:1px solid #ddd;font-size:8px;text-align:center;overflow:hidden}.stock{direction:ltr;display:flex;height:28px;margin:4px 0}.sp{border:1px solid #555;font-size:9px;display:flex;align-items:center;justify-content:center;overflow:hidden}.shape{width:100%;max-width:650px;border:1px solid #bbb}</style></head><body><main>
+<h1>Deck PRO 3.4</h1>
+<div class="card"><h2>צורת הדק</h2><label>בחר צורה<select id="shape"><option value="rect" selected>מלבן</option><option value="custom">צורה מותאמת — אלכסון</option></select></label></div>
 <div class="card"><h2>נתוני השטח</h2><div class="grid">
-<label>בסיס תחתון (מ׳)<input id="bottom" type="number" step=".01" value="6.60"></label>
-<label>צלע שמאלית (מ׳)<input id="leftH" type="number" step=".01" value="3.10"></label>
-<label>בסיס עליון (מ׳)<input id="top" type="number" step=".01" value="1.60"></label>
-<label>אלכסון (מ׳)<input id="diag" type="number" step=".01" value="5.64"></label>
-<label>צלע ימנית (מ׳)<input id="rightH" type="number" step=".01" value="0.50"></label>
-</div><p class="muted">כיוון הלוחות: משמאל לימין. שתי וערב A/B הוא חוק קבוע.</p>
+<label id="bottomLabel">אורך החיפוי — כיוון הלוחות (מ׳)<input id="bottom" type="number" step=".01" value="6.60"></label>
+<label id="leftLabel">רוחב השטח לרוחב הלוחות (מ׳)<input id="leftH" type="number" step=".01" value="3.10"></label>
+<label class="custom">בסיס עליון (מ׳)<input id="top" type="number" step=".01" value="1.60"></label>
+<label class="custom">אלכסון (מ׳)<input id="diag" type="number" step=".01" value="5.64"></label>
+<label class="custom">צלע ימנית (מ׳)<input id="rightH" type="number" step=".01" value="0.50"></label>
+</div><p class="muted">במלבן הזן את המידה שלאורכה הלוחות רצים ואת המידה הניצבת שקובעת את מספר השורות. שתי וערב A/B הוא חוק קבוע.</p>
 <h2>נתוני לוחות וחיבורים</h2><div class="grid">
-<label>אורך לוח גלם (מ׳)<input id="BL" type="number" step=".001" value="4.88"></label>
-<label>רוחב לוח (ס״מ)<input id="BW" type="number" value="14"></label>
-<label>רווח (מ״מ)<input id="G" type="number" value="5"></label>
-<label>רוחב חיתוך (מ״מ)<input id="K" type="number" value="3"></label>
-<label>חתיכה מינימלית (ס״מ)<input id="MIN" type="number" value="40"></label>
-<label>חיבור מהקצה מינ׳ (ס״מ)<input id="EDGE" type="number" value="40"></label>
-<label>קווי חיבור מקס׳<select id="MAX"><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label>
-</div><button id="go">חשב חלופות</button></div>
-<div id="shapeOut"></div><div id="out"></div></main><script src="./app.js"></script></body></html>
+<label>אורך לוח גלם (מ׳)<input id="BL" type="number" step=".001" value="4.88"></label><label>רוחב לוח (ס״מ)<input id="BW" type="number" value="14"></label><label>רווח (מ״מ)<input id="G" type="number" value="5"></label><label>רוחב חיתוך (מ״מ)<input id="K" type="number" value="3"></label><label>חתיכה מינימלית (ס״מ)<input id="MIN" type="number" value="40"></label><label>חיבור מהקצה מינ׳ (ס״מ)<input id="EDGE" type="number" value="40"></label><label>קווי חיבור מקס׳<select id="MAX"><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label>
+</div><button id="go">חשב חלופות</button></div><div id="shapeOut"></div><div id="out"></div></main><script src="./app.js"></script></body></html>
